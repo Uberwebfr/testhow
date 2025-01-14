@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Howdens - Magasinier</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+
+	 <!-- Bouton de retour à l'accueil -->
+        <div class="header">
+            <a href="index.html" class="back-to-index">← Retour à l'accueil</a>
+        </div>
+
+        <h1>Howdens - Interface Magasinier</h1>
+
+        <div id="commandes-list">
+    <h2>Commandes à traiter</h2>
+    <div id="commandes-container" class="commandes-container"></div>
+</div>
+
+        <div id="preparation-interface" style="display:none;">
+            <h2>Préparation de la Commande</h2>
+            <p id="commande-info">Commande : <span id="current-commande"></span></p>
+            <table>
+    <thead>
+        <tr>
+            <th>Code Produit</th>
+            <th>Description</th>
+            <th>Quantité</th>
+            <th>Statut</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="commande-table"></tbody>
+</table>
+
+            <div id="scanner">
+                <h3>Scanner un code-barres</h3>
+                <button id="start-camera">Activer la caméra</button>
+                <video id="barcode-video"></video>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script src="magasinier.js"></script>
+</body>
+</html>

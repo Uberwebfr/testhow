@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Howdens - Administration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+
+	<!-- Bouton de retour à l'accueil -->
+        <div class="header">
+            <a href="index.html" class="back-to-index">← Retour à l'accueil</a>
+        </div>
+
+        <!-- Menu de navigation -->
+        <nav class="admin-menu">
+            <button class="menu-tab active" data-section="import-commands">Importer un fichier de commandes</button>
+            <button class="menu-tab" data-section="registered-commands">Commandes enregistrées</button>
+            <button class="menu-tab" data-section="import-products">Importer la base de données des produits</button>
+        </nav>
+
+        <!-- Section Importer un fichier de commandes -->
+        <section id="import-commands" class="admin-section active">
+            <h2>Importer un fichier de commandes</h2>
+            <label for="commande-number">Numéro de commande :</label>
+            <input type="text" id="commande-number" placeholder="Saisir le numéro de commande">
+            <label for="file-upload">Importer le fichier Excel :</label>
+            <input type="file" id="file-upload" accept=".xlsx">
+            <button id="add-commande">Ajouter la commande</button>
+        </section>
+
+        <!-- Section Commandes enregistrées -->
+        <section id="registered-commands" class="admin-section">
+            <h2>Commandes enregistrées</h2>
+            <div id="commandes-container" class="commandes-container"></div>
+        </section>
+
+        <!-- Section Importer la base de données des produits -->
+        <section id="import-products" class="admin-section">
+            <h2>Importer la base de données des produits</h2>
+            <label for="product-file">Fichier Excel des produits :</label>
+            <input type="file" id="product-file" accept=".xlsx">
+            <button id="import-product-button">Importer</button>
+
+            <h3>Base de données des produits</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Référence</th>
+                        <th>Gencode</th>
+                        <th>Descriptif</th>
+                    </tr>
+                </thead>
+                <tbody id="product-table-body"></tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Howdens - Accueil</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Howdens - Gestion des Commandes</h1>
+            <p>Bienvenue dans l'application de gestion des commandes. Sélectionnez votre rôle pour commencer.</p>
+        </header>
+
+        <main>
+            <!-- Section pour choisir le rôle -->
+            <section class="role-selection">
+                <div class="role-card">
+                    <h2>Administrateur</h2>
+                    <p>Importez les commandes, suivez leur statut, et gérez les produits.</p>
+                    <a href="admin.html" class="role-button">Accéder à l'interface Administrateur</a>
+                </div>
+
+                <div class="role-card">
+                    <h2>Magasinier</h2>
+                    <p>Traitez les commandes en validant les produits scannés ou manuellement.</p>
+                    <a href="magasinier.html" class="role-button">Accéder à l'interface Magasinier</a>
+                </div>
+            </section>
+
+            <!-- Mini notice d'utilisation -->
+            <section class="notice">
+                <h2>Notice d'utilisation</h2>
+                <p><strong>Administrateur :</strong></p>
+                <ul>
+                    <li>Importez un fichier Excel contenant les commandes.</li>
+                    <li>Ajoutez et gérez les commandes disponibles.</li>
+                    <li>Suivez le statut des commandes en temps réel.</li>
+                </ul>
+                <p><strong>Magasinier :</strong></p>
+                <ul>
+                    <li>Accédez à la liste des commandes à traiter.</li>
+                    <li>Validez les produits via un scan de code-barres ou manuellement.</li>
+                    <li>Terminez la préparation pour notifier que la commande est prête.</li>
+                </ul>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 Howdens - Tous droits réservés.</p>
+        </footer>
+    </div>
+</body>
+</html>
