@@ -248,6 +248,52 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+import { database } from "./firebase-config.js";
+import { ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+// Ajouter une commande
+function addCommande() {
+    const numero = document.getElementById("commande-number").value;
+    if (!numero) {
+        alert("Veuillez entrer un numéro de commande.");
+        return;
+    }
+
+    const commande = {
+        numero,
+        produits: [],
+        status: "En cours"
+    };
+
+    const commandesRef = ref(database, "commandes");
+    push(commandesRef, commande)
+        .then(() => alert("Commande ajoutée avec succès !"))
+        .catch((error) => console.error("Erreur :", error));
+}
+
+// Charger les commandes
+function fetchCommandes() {
+    const commandesRef = ref(database, "commandes");
+    onValue(commandesRef, (snapshot) => {
+        const commandes = snapshot.val();
+        const container = document.getElementById("commandes-container");
+        container.innerHTML = "";
+
+        for (const id in commandes) {
+            const commande = commandes[id];
+            const div = document.createElement("div");
+            div.classList.add("commande-card");
+            div.innerHTML = `
+                <div><strong>Commande :</strong> ${commande.numero}</div>
+                <div><strong>Status :</strong> ${commande.status || "En cours"}</div>
+            `;
+            container.appendChild(div);
+        }
+    });
+}
+
+document.getElementById("add-commande").addEventListener("click", addCommande);
+document.addEventListener("DOMContentLoaded", fetchCommandes);
 
 // Chargement initial des produits
 document.addEventListener("DOMContentLoaded", renderProductDatabase);
