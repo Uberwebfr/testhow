@@ -5,13 +5,13 @@ import * as XLSX from "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.f
 
 // Configuration Firebase
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
+  authDomain: "ma-prep-1c7b9.firebaseapp.com",
+  projectId: "ma-prep-1c7b9",
+  storageBucket: "ma-prep-1c7b9.firebasestorage.app",
+  messagingSenderId: "587620763178",
+  appId: "1:587620763178:web:0b0b49392daffec8072553",
+  measurementId: "G-7DL9ZEL6MF"
 };
 
 const app = initializeApp(firebaseConfig);
