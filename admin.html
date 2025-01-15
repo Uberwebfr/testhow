@@ -8,26 +8,23 @@
 </head>
 <body>
     <div class="container">
-
-	<!-- Bouton de retour à l'accueil -->
+        <!-- Bouton de retour à l'accueil -->
         <div class="header">
             <a href="index.html" class="back-to-index">← Retour à l'accueil</a>
         </div>
 
         <!-- Menu de navigation -->
         <nav class="admin-menu">
-            <button class="menu-tab active" data-section="import-commands">Importer un fichier de commandes</button>
+            <button class="menu-tab active" data-section="import-commands">Importer une commande</button>
             <button class="menu-tab" data-section="registered-commands">Commandes enregistrées</button>
-            <button class="menu-tab" data-section="import-products">Importer la base de données des produits</button>
+            <button class="menu-tab" data-section="import-products">Base de produits</button>
         </nav>
 
-        <!-- Section Importer un fichier de commandes -->
+        <!-- Section Importer une commande -->
         <section id="import-commands" class="admin-section active">
-            <h2>Importer un fichier de commandes</h2>
+            <h2>Importer une commande</h2>
             <label for="commande-number">Numéro de commande :</label>
-            <input type="text" id="commande-number" placeholder="Saisir le numéro de commande">
-            <label for="file-upload">Importer le fichier Excel :</label>
-            <input type="file" id="file-upload" accept=".xlsx">
+            <input type="text" id="commande-number" placeholder="Entrez le numéro de commande">
             <button id="add-commande">Ajouter la commande</button>
         </section>
 
@@ -37,20 +34,19 @@
             <div id="commandes-container" class="commandes-container"></div>
         </section>
 
-        <!-- Section Importer la base de données des produits -->
+        <!-- Section Base de produits -->
         <section id="import-products" class="admin-section">
-            <h2>Importer la base de données des produits</h2>
-            <label for="product-file">Fichier Excel des produits :</label>
+            <h2>Base de produits</h2>
+            <label for="product-file">Importer la base de produits (Excel) :</label>
             <input type="file" id="product-file" accept=".xlsx">
             <button id="import-product-button">Importer</button>
-
-            <h3>Base de données des produits</h3>
+            <h3>Liste des produits</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Référence</th>
                         <th>Gencode</th>
-                        <th>Descriptif</th>
+                        <th>Description</th>
                     </tr>
                 </thead>
                 <tbody id="product-table-body"></tbody>
@@ -58,48 +54,8 @@
         </section>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="admin.js"></script>
-	<!-- Script Firebase -->
-    <script type="module">
-        // Import des fonctions Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-        // Configuration Firebase
-        const firebaseConfig = {
-    apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
-    authDomain: "ma-prep-1c7b9.firebaseapp.com",
-    projectId: "ma-prep-1c7b9",
-    storageBucket: "ma-prep-1c7b9.firebasestorage.app",
-    messagingSenderId: "587620763178",
-    appId: "1:587620763178:web:0b0b49392daffec8072553",
-    measurementId: "G-7DL9ZEL6MF"
-  };
-
-        // Initialisation Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Ajouter une commande dans Firebase
-        function addCommande() {
-            const commandesRef = ref(database, 'commandes');
-            const newCommandeRef = push(commandesRef);
-
-            const numero = document.getElementById("commande-number").value;
-
-            if (!numero) {
-                alert("Veuillez entrer un numéro de commande.");
-                return;
-            }
-
-            set(newCommandeRef, { numero, status: "En cours" })
-                .then(() => alert("Commande ajoutée avec succès !"))
-                .catch((error) => console.error("Erreur :", error));
-        }
-
-        // Événement pour le bouton "Ajouter la commande"
-        document.getElementById("add-commande").addEventListener("click", addCommande);
-    </script>
+    <!-- Firebase et JS -->
+    <script type="module" src="admin.js"></script>
 </body>
 </html>
+
