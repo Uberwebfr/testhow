@@ -8,86 +8,39 @@
 </head>
 <body>
     <div class="container">
-
-	 <!-- Bouton de retour à l'accueil -->
+        <!-- Bouton de retour à l'accueil -->
         <div class="header">
             <a href="index.html" class="back-to-index">← Retour à l'accueil</a>
         </div>
 
-        <h1>Howdens - Interface Magasinier</h1>
+        <h1>Interface Magasinier</h1>
 
+        <!-- Liste des commandes -->
         <div id="commandes-list">
-    <h2>Commandes à traiter</h2>
-    <div id="commandes-container" class="commandes-container"></div>
-</div>
-
-        <div id="preparation-interface" style="display:none;">
-            <h2>Préparation de la Commande</h2>
-            <p id="commande-info">Commande : <span id="current-commande"></span></p>
-            <table>
-    <thead>
-        <tr>
-            <th>Code Produit</th>
-            <th>Description</th>
-            <th>Quantité</th>
-            <th>Statut</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="commande-table"></tbody>
-</table>
-
-            <div id="scanner">
-                <h3>Scanner un code-barres</h3>
-                <button id="start-camera">Activer la caméra</button>
-                <video id="barcode-video"></video>
-            </div>
+            <h2>Commandes à traiter</h2>
+            <div id="commandes-container" class="commandes-container"></div>
         </div>
+
+        <!-- Détails de la commande -->
+        <div id="commande-details" style="display:none;">
+            <h2>Commande : <span id="current-commande"></span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Description</th>
+                        <th>Quantité</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="commande-table-body"></tbody>
+            </table>
+        </div>
+
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
-    <script src="magasinier.js"></script>
-
-	<!-- Script Firebase -->
-    <script type="module">
-        // Import des fonctions Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-        // Configuration Firebase
-        const firebaseConfig = {
-    apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
-    authDomain: "ma-prep-1c7b9.firebaseapp.com",
-    projectId: "ma-prep-1c7b9",
-    storageBucket: "ma-prep-1c7b9.firebasestorage.app",
-    messagingSenderId: "587620763178",
-    appId: "1:587620763178:web:0b0b49392daffec8072553",
-    measurementId: "G-7DL9ZEL6MF"
-  };
-
-        // Initialisation Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Ajouter une commande dans Firebase
-        function addCommande() {
-            const commandesRef = ref(database, 'commandes');
-            const newCommandeRef = push(commandesRef);
-
-            const numero = document.getElementById("commande-number").value;
-
-            if (!numero) {
-                alert("Veuillez entrer un numéro de commande.");
-                return;
-            }
-
-            set(newCommandeRef, { numero, status: "En cours" })
-                .then(() => alert("Commande ajoutée avec succès !"))
-                .catch((error) => console.error("Erreur :", error));
-        }
-
-        // Événement pour le bouton "Ajouter la commande"
-        document.getElementById("add-commande").addEventListener("click", addCommande);
-    </script>
+    <!-- Firebase et JS -->
+    <script type="module" src="magasinier.js"></script>
 </body>
 </html>
