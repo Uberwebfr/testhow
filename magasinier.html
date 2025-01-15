@@ -47,5 +47,47 @@
 
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <script src="magasinier.js"></script>
+
+	<!-- Script Firebase -->
+    <script type="module">
+        // Import des fonctions Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Configuration Firebase
+        const firebaseConfig = {
+    apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
+    authDomain: "ma-prep-1c7b9.firebaseapp.com",
+    projectId: "ma-prep-1c7b9",
+    storageBucket: "ma-prep-1c7b9.firebasestorage.app",
+    messagingSenderId: "587620763178",
+    appId: "1:587620763178:web:0b0b49392daffec8072553",
+    measurementId: "G-7DL9ZEL6MF"
+  };
+
+        // Initialisation Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Ajouter une commande dans Firebase
+        function addCommande() {
+            const commandesRef = ref(database, 'commandes');
+            const newCommandeRef = push(commandesRef);
+
+            const numero = document.getElementById("commande-number").value;
+
+            if (!numero) {
+                alert("Veuillez entrer un numéro de commande.");
+                return;
+            }
+
+            set(newCommandeRef, { numero, status: "En cours" })
+                .then(() => alert("Commande ajoutée avec succès !"))
+                .catch((error) => console.error("Erreur :", error));
+        }
+
+        // Événement pour le bouton "Ajouter la commande"
+        document.getElementById("add-commande").addEventListener("click", addCommande);
+    </script>
 </body>
 </html>
