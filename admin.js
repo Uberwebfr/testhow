@@ -5,13 +5,13 @@ import * as XLSX from "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.f
 
 // Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
-  authDomain: "ma-prep-1c7b9.firebaseapp.com",
-  projectId: "ma-prep-1c7b9",
-  storageBucket: "ma-prep-1c7b9.firebasestorage.app",
-  messagingSenderId: "587620763178",
-  appId: "1:587620763178:web:0b0b49392daffec8072553",
-  measurementId: "G-7DL9ZEL6MF"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -55,30 +55,37 @@ function importCommandsFromExcel() {
 
             // Validation du fichier
             if (rows.length < 2 || rows[0].length < 1) {
-                alert("Le fichier doit contenir au moins une colonne : Numéro de commande.");
+                alert("Le fichier doit contenir au moins une colonne : Code Produit.");
                 return;
             }
 
             // Vérifier les colonnes
             const headers = rows[0];
-            if (!headers.includes("Numéro de commande")) {
-                alert("La première colonne doit être intitulée 'Numéro de commande'.");
+            if (!headers.includes("Code Produit") || !headers.includes("Quantité Commande")) {
+                alert("Le fichier doit contenir les colonnes 'Code Produit' et 'Quantité Commande'.");
                 return;
             }
 
-            // Ajouter les commandes dans Firebase
+            // Ajouter chaque produit comme une commande dans Firebase
             const commandesRef = ref(database, "commandes");
-            rows.slice(1).forEach((row) => {
-                const numero = row[0]; // Numéro de commande
-                const status = row[1] || "En cours"; // Statut (par défaut : En cours)
+            const numeroCommande = `CMD-${Date.now()}`; // Générer un numéro unique pour la commande
+            const produits = rows.slice(1).map((row) => ({
+                codeProduit: row[headers.indexOf("Code Produit")],
+                description: row[headers.indexOf("Description")] || "",
+                quantite: row[headers.indexOf("Quantité Commande")],
+            })).filter((p) => p.codeProduit && p.quantite); // Filtrer les lignes vides ou incorrectes
 
-                if (numero) {
-                    push(commandesRef, { numero, produits: [], status });
-                }
-            });
+            if (produits.length === 0) {
+                alert("Aucun produit valide trouvé dans le fichier.");
+                return;
+            }
 
-            alert("Commandes importées avec succès !");
-            fetchCommandes();
+            push(commandesRef, { numero: numeroCommande, produits, status: "En cours" })
+                .then(() => {
+                    alert(`Commande ${numeroCommande} importée avec succès !`);
+                    fetchCommandes();
+                })
+                .catch((error) => console.error("Erreur :", error));
         } catch (error) {
             console.error("Erreur lors de l'importation :", error);
             alert("Une erreur s'est produite lors de l'importation du fichier Excel.");
