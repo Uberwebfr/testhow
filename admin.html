@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+
         <!-- Bouton de retour à l'accueil -->
         <div class="header">
             <a href="index.html" class="back-to-index">← Retour à l'accueil</a>
@@ -15,16 +16,16 @@
 
         <!-- Menu de navigation -->
         <nav class="admin-menu">
-            <button class="menu-tab active" data-section="import-commands">Importer une commande</button>
+            <button class="menu-tab active" data-section="import-commands">Importer un fichier de commandes</button>
             <button class="menu-tab" data-section="registered-commands">Commandes enregistrées</button>
-            <button class="menu-tab" data-section="import-products">Base de produits</button>
+            <button class="menu-tab" data-section="import-products">Importer la base de données des produits</button>
         </nav>
 
-        <!-- Section Importer une commande -->
+        <!-- Section Importer un fichier de commandes -->
         <section id="import-commands" class="admin-section active">
-            <h2>Importer une commande</h2>
+            <h2>Importer un fichier de commandes</h2>
             <label for="commande-number">Numéro de commande :</label>
-            <input type="text" id="commande-number" placeholder="Entrez le numéro de commande">
+            <input type="text" id="commande-number" placeholder="Saisir le numéro de commande">
             <button id="add-commande">Ajouter la commande</button>
         </section>
 
@@ -34,19 +35,20 @@
             <div id="commandes-container" class="commandes-container"></div>
         </section>
 
-        <!-- Section Base de produits -->
+        <!-- Section Importer la base de données des produits -->
         <section id="import-products" class="admin-section">
-            <h2>Base de produits</h2>
-            <label for="product-file">Importer la base de produits (Excel) :</label>
+            <h2>Importer la base de données des produits</h2>
+            <label for="product-file">Fichier Excel des produits :</label>
             <input type="file" id="product-file" accept=".xlsx">
             <button id="import-product-button">Importer</button>
-            <h3>Liste des produits</h3>
+
+            <h3>Base de données des produits</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Référence</th>
                         <th>Gencode</th>
-                        <th>Description</th>
+                        <th>Descriptif</th>
                     </tr>
                 </thead>
                 <tbody id="product-table-body"></tbody>
@@ -54,8 +56,141 @@
         </section>
     </div>
 
-    <!-- Firebase et JS -->
-    <script type="module" src="admin.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Configuration Firebase
+        const firebaseConfig = {
+  apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
+  authDomain: "ma-prep-1c7b9.firebaseapp.com",
+  projectId: "ma-prep-1c7b9",
+  storageBucket: "ma-prep-1c7b9.firebasestorage.app",
+  messagingSenderId: "587620763178",
+  appId: "1:587620763178:web:0b0b49392daffec8072553",
+  measurementId: "G-7DL9ZEL6MF"
+};
+
+        // Initialisation Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Ajouter une commande
+        document.getElementById("add-commande").addEventListener("click", () => {
+            const numero = document.getElementById("commande-number").value;
+            if (!numero) {
+                alert("Veuillez entrer un numéro de commande.");
+                return;
+            }
+
+            const commande = {
+                numero,
+                produits: [],
+                status: "En cours"
+            };
+
+            const commandesRef = ref(database, "commandes");
+            push(commandesRef, commande)
+                .then(() => {
+                    alert("Commande ajoutée avec succès !");
+                    fetchCommandes();
+                })
+                .catch((error) => console.error("Erreur :", error));
+        });
+
+        // Charger les commandes
+        function fetchCommandes() {
+            const commandesRef = ref(database, "commandes");
+            onValue(commandesRef, (snapshot) => {
+                const commandes = snapshot.val();
+                const container = document.getElementById("commandes-container");
+                container.innerHTML = "";
+
+                for (const id in commandes) {
+                    const commande = commandes[id];
+                    const div = document.createElement("div");
+                    div.classList.add("commande-card");
+                    div.innerHTML = `
+                        <div><strong>Commande :</strong> ${commande.numero}</div>
+                        <div><strong>Status :</strong> ${commande.status || "En cours"}</div>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        // Importer les produits depuis un fichier Excel
+        document.getElementById("import-product-button").addEventListener("click", () => {
+            const fileInput = document.getElementById("product-file");
+            if (!fileInput.files[0]) {
+                alert("Veuillez sélectionner un fichier Excel.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                if (rows.length < 1 || rows[0].length < 3) {
+                    alert("Le fichier doit contenir au moins 3 colonnes : Référence, Gencode, Descriptif.");
+                    return;
+                }
+
+                const products = rows.slice(1).map(row => ({
+                    reference: row[0],
+                    gencode: row[1],
+                    description: row[2]
+                }));
+
+                const productsRef = ref(database, "products");
+                set(productsRef, products)
+                    .then(() => {
+                        alert("Base de données des produits importée avec succès !");
+                        fetchProducts();
+                    })
+                    .catch((error) => console.error("Erreur :", error));
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Charger les produits
+        function fetchProducts() {
+            const productsRef = ref(database, "products");
+            onValue(productsRef, (snapshot) => {
+                const products = snapshot.val();
+                const tableBody = document.getElementById("product-table-body");
+                tableBody.innerHTML = "";
+
+                if (products) {
+                    products.forEach((product) => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${product.reference}</td>
+                            <td>${product.gencode}</td>
+                            <td>${product.description}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                }
+            });
+        }
+
+        // Charger les données au démarrage
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchCommandes();
+            fetchProducts();
+        });
+    </script>
+
+    <!-- XLSX Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>
-
