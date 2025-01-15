@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 import * as XLSX from "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
 // Configuration Firebase
@@ -17,17 +17,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Ajouter une commande
-document.getElementById("add-commande").addEventListener("click", () => {
+// Ajouter une commande dans Firebase
+function addCommande() {
     const numero = document.getElementById("commande-number").value;
-    const fileInput = document.getElementById("file-upload");
-
     if (!numero) {
         alert("Veuillez entrer un numéro de commande.");
         return;
     }
+
+    const commandesRef = ref(database, "commandes");
+    push(commandesRef, { numero, produits: [], status: "En cours" })
+        .then(() => {
+            alert("Commande ajoutée avec succès !");
+            fetchCommandes();
+        })
+        .catch((error) => console.error("Erreur :", error));
+}
+
+// Importer les commandes depuis un fichier Excel
+function importCommandsFromExcel() {
+    const fileInput = document.getElementById("file-upload");
     if (!fileInput.files[0]) {
-        alert("Veuillez importer un fichier Excel.");
+        alert("Veuillez sélectionner un fichier Excel.");
         return;
     }
 
@@ -35,31 +46,47 @@ document.getElementById("add-commande").addEventListener("click", () => {
     const reader = new FileReader();
 
     reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-        // Récupère les produits
-        const produits = rows.slice(1).map(row => ({
-            codeProduit: row[0],
-            description: row[1],
-            quantite: row[3],
-        }));
+            // Validation du fichier
+            if (rows.length < 2 || rows[0].length < 1) {
+                alert("Le fichier doit contenir au moins une colonne : Numéro de commande.");
+                return;
+            }
 
-        // Ajouter dans Firebase
-        const commandesRef = ref(database, "commandes");
-        push(commandesRef, { numero, produits, status: "En cours" })
-            .then(() => {
-                alert(`Commande ${numero} ajoutée avec succès.`);
-                fetchCommandes();
-            })
-            .catch(error => console.error("Erreur :", error));
+            // Vérifier les colonnes
+            const headers = rows[0];
+            if (!headers.includes("Numéro de commande")) {
+                alert("La première colonne doit être intitulée 'Numéro de commande'.");
+                return;
+            }
+
+            // Ajouter les commandes dans Firebase
+            const commandesRef = ref(database, "commandes");
+            rows.slice(1).forEach((row) => {
+                const numero = row[0]; // Numéro de commande
+                const status = row[1] || "En cours"; // Statut (par défaut : En cours)
+
+                if (numero) {
+                    push(commandesRef, { numero, produits: [], status });
+                }
+            });
+
+            alert("Commandes importées avec succès !");
+            fetchCommandes();
+        } catch (error) {
+            console.error("Erreur lors de l'importation :", error);
+            alert("Une erreur s'est produite lors de l'importation du fichier Excel.");
+        }
     };
 
     reader.readAsArrayBuffer(file);
-});
+}
 
 // Charger les commandes depuis Firebase
 function fetchCommandes() {
@@ -77,7 +104,6 @@ function fetchCommandes() {
                 div.innerHTML = `
                     <div><strong>Commande :</strong> ${commande.numero}</div>
                     <div><strong>Status :</strong> ${commande.status}</div>
-                    <button onclick="deleteCommande('${id}')">Supprimer</button>
                 `;
                 container.appendChild(div);
             }
@@ -87,78 +113,7 @@ function fetchCommandes() {
     });
 }
 
-// Supprimer une commande
-function deleteCommande(id) {
-    const commandeRef = ref(database, `commandes/${id}`);
-    remove(commandeRef)
-        .then(() => {
-            alert("Commande supprimée.");
-            fetchCommandes();
-        })
-        .catch(error => console.error("Erreur :", error));
-}
-
-// Charger les produits depuis Firebase
-function fetchProducts() {
-    const productsRef = ref(database, "products");
-    onValue(productsRef, (snapshot) => {
-        const products = snapshot.val();
-        const tableBody = document.getElementById("product-table-body");
-        tableBody.innerHTML = "";
-
-        if (products) {
-            products.forEach(product => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${product.reference}</td>
-                    <td>${product.gencode}</td>
-                    <td>${product.description}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
-    });
-}
-
-// Importer la base de données des produits
-document.getElementById("import-product-button").addEventListener("click", () => {
-    const fileInput = document.getElementById("product-file");
-
-    if (!fileInput.files[0]) {
-        alert("Veuillez sélectionner un fichier Excel.");
-        return;
-    }
-
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        const products = rows.slice(1).map(row => ({
-            reference: row[0],
-            gencode: row[1],
-            description: row[2]
-        }));
-
-        const productsRef = ref(database, "products");
-        set(productsRef, products)
-            .then(() => {
-                alert("Base de produits importée avec succès.");
-                fetchProducts();
-            })
-            .catch(error => console.error("Erreur :", error));
-    };
-
-    reader.readAsArrayBuffer(file);
-});
-
-// Initialisation
-document.addEventListener("DOMContentLoaded", () => {
-    fetchCommandes();
-    fetchProducts();
-});
+// Ajouter des écouteurs pour les boutons
+document.getElementById("add-commande").addEventListener("click", addCommande);
+document.getElementById("import-commands-button").addEventListener("click", importCommandsFromExcel);
+document.addEventListener("DOMContentLoaded", fetchCommandes);

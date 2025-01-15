@@ -19,7 +19,7 @@
         <nav class="admin-menu">
             <button class="menu-tab active" data-section="import-commands">Importer un fichier de commandes</button>
             <button class="menu-tab" data-section="registered-commands">Commandes enregistrées</button>
-            <button class="menu-tab" data-section="import-products">Importer la base de données des produits</button>
+            <button class="menu-tab" data-section="import-products">Base de produits</button>
         </nav>
 
         <!-- Section Importer un fichier de commandes -->
@@ -30,6 +30,7 @@
             <label for="file-upload">Importer le fichier Excel :</label>
             <input type="file" id="file-upload" accept=".xlsx">
             <button id="add-commande">Ajouter la commande</button>
+            <button id="import-commands-button">Importer</button>
         </section>
 
         <!-- Section Commandes enregistrées -->
@@ -38,9 +39,9 @@
             <div id="commandes-container" class="commandes-container"></div>
         </section>
 
-        <!-- Section Importer la base de données des produits -->
+        <!-- Section Base de produits -->
         <section id="import-products" class="admin-section">
-            <h2>Importer la base de données des produits</h2>
+            <h2>Base de produits</h2>
             <label for="product-file">Fichier Excel des produits :</label>
             <input type="file" id="product-file" accept=".xlsx">
             <button id="import-product-button">Importer</button>
@@ -61,5 +62,29 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="admin.js" type="module"></script>
+
+    <!-- Gestion des onglets -->
+    <script>
+        // Gestion des onglets
+        document.querySelectorAll(".menu-tab").forEach((tab) => {
+            tab.addEventListener("click", function () {
+                // Retirer la classe active de tous les onglets
+                document.querySelectorAll(".menu-tab").forEach((t) => t.classList.remove("active"));
+
+                // Ajouter la classe active à l'onglet cliqué
+                this.classList.add("active");
+
+                // Masquer toutes les sections
+                document.querySelectorAll(".admin-section").forEach((section) => section.classList.remove("active"));
+
+                // Afficher la section correspondante
+                const sectionId = this.getAttribute("data-section");
+                document.getElementById(sectionId).classList.add("active");
+            });
+        });
+
+        // Activer le premier onglet par défaut
+        document.querySelector(".menu-tab").click();
+    </script>
 </body>
 </html>
