@@ -9,37 +9,34 @@
 <body>
     <div class="container">
 
-        <!-- Bouton de retour à l'accueil -->
+	 <!-- Bouton de retour à l'accueil -->
         <div class="header">
             <a href="index.html" class="back-to-index">← Retour à l'accueil</a>
         </div>
 
         <h1>Howdens - Interface Magasinier</h1>
 
-        <!-- Liste des commandes -->
         <div id="commandes-list">
-            <h2>Commandes à traiter</h2>
-            <div id="commandes-container" class="commandes-container"></div>
-        </div>
+    <h2>Commandes à traiter</h2>
+    <div id="commandes-container" class="commandes-container"></div>
+</div>
 
-        <!-- Interface de préparation -->
         <div id="preparation-interface" style="display:none;">
             <h2>Préparation de la Commande</h2>
             <p id="commande-info">Commande : <span id="current-commande"></span></p>
             <table>
-                <thead>
-                    <tr>
-                        <th>Code Produit</th>
-                        <th>Description</th>
-                        <th>Quantité</th>
-                        <th>Statut</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="commande-table"></tbody>
-            </table>
+    <thead>
+        <tr>
+            <th>Code Produit</th>
+            <th>Description</th>
+            <th>Quantité</th>
+            <th>Statut</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="commande-table"></tbody>
+</table>
 
-            <!-- Scanner de code-barres -->
             <div id="scanner">
                 <h3>Scanner un code-barres</h3>
                 <button id="start-camera">Activer la caméra</button>
@@ -48,130 +45,7 @@
         </div>
     </div>
 
-    <!-- Firebase et scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-        // Configuration Firebase
-        const firebaseConfig = {
-  apiKey: "AIzaSyC1wiu60JIEsp6gZWILKRu24PwIiYVk9ZA",
-  authDomain: "ma-prep-1c7b9.firebaseapp.com",
-  projectId: "ma-prep-1c7b9",
-  storageBucket: "ma-prep-1c7b9.firebasestorage.app",
-  messagingSenderId: "587620763178",
-  appId: "1:587620763178:web:0b0b49392daffec8072553",
-  measurementId: "G-7DL9ZEL6MF"
-};
-
-        // Initialisation Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        let currentCommandeId = null;
-
-        // Charger les commandes depuis Firebase
-        function fetchCommandes() {
-            const commandesRef = ref(database, "commandes");
-            onValue(commandesRef, (snapshot) => {
-                const commandes = snapshot.val();
-                const container = document.getElementById("commandes-container");
-                container.innerHTML = "";
-
-                for (const id in commandes) {
-                    const commande = commandes[id];
-                    const div = document.createElement("div");
-                    div.classList.add("commande-card");
-                    div.innerHTML = `
-                        <div><strong>Commande :</strong> ${commande.numero}</div>
-                        <div><strong>Status :</strong> ${commande.status || "En cours"}</div>
-                        <button onclick="loadCommande('${id}')">Préparer</button>
-                    `;
-                    container.appendChild(div);
-                }
-            });
-        }
-
-        // Charger une commande
-        function loadCommande(id) {
-            const commandeRef = ref(database, `commandes/${id}`);
-            onValue(commandeRef, (snapshot) => {
-                const commande = snapshot.val();
-                currentCommandeId = id;
-                document.getElementById("current-commande").textContent = commande.numero;
-
-                const tableBody = document.getElementById("commande-table");
-                tableBody.innerHTML = "";
-
-                commande.produits.forEach((produit, index) => {
-                    const statusClass = produit.status === "Validé" ? "valide" : "en-attente";
-                    const statusText = produit.status || "En attente";
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${produit.reference}</td>
-                        <td>${produit.description}</td>
-                        <td>${produit.quantite}</td>
-                        <td class="status ${statusClass}" id="status-${index}">${statusText}</td>
-                        <td>
-                            <button class="validate-manually" data-index="${index}">Valider</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-
-                document.getElementById("preparation-interface").style.display = "block";
-
-                document.querySelectorAll(".validate-manually").forEach((button) => {
-                    button.addEventListener("click", () => validateManually(id, button.dataset.index));
-                });
-            });
-        }
-
-        // Valider un produit manuellement
-        function validateManually(commandeId, productIndex) {
-            const commandeRef = ref(database, `commandes/${commandeId}`);
-            onValue(commandeRef, (snapshot) => {
-                const commande = snapshot.val();
-                const produit = commande.produits[productIndex];
-
-                if (produit.status === "Validé") {
-                    alert("Ce produit est déjà validé !");
-                    return;
-                }
-
-                produit.status = "Validé";
-
-                update(commandeRef, { produits: commande.produits })
-                    .then(() => {
-                        document.getElementById(`status-${productIndex}`).textContent = "Validé";
-                        document.getElementById(`status-${productIndex}`).classList.add("valide");
-                        checkIfCommandeIsReady(commandeId);
-                    })
-                    .catch((error) => console.error("Erreur lors de la validation :", error));
-            }, { onlyOnce: true });
-        }
-
-        // Vérifier si la commande est prête
-        function checkIfCommandeIsReady(commandeId) {
-            const commandeRef = ref(database, `commandes/${commandeId}`);
-            onValue(commandeRef, (snapshot) => {
-                const commande = snapshot.val();
-                const allValidated = commande.produits.every(p => p.status === "Validé");
-
-                if (allValidated) {
-                    update(commandeRef, { status: "Prête" })
-                        .then(() => fetchCommandes())
-                        .catch((error) => console.error("Erreur :", error));
-                }
-            }, { onlyOnce: true });
-        }
-
-        // Charger les commandes au démarrage
-        document.addEventListener("DOMContentLoaded", fetchCommandes);
-    </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script src="magasinier.js"></script>
 </body>
 </html>
