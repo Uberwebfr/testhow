@@ -111,5 +111,40 @@ function checkIfCommandeIsReady(commandeIndex) {
     }
 }
 
+import { database } from "./firebase-config.js";
+import { ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+// Charger les commandes
+function fetchCommandes() {
+    const commandesRef = ref(database, "commandes");
+    onValue(commandesRef, (snapshot) => {
+        const commandes = snapshot.val();
+        const container = document.getElementById("commandes-container");
+        container.innerHTML = "";
+
+        for (const id in commandes) {
+            const commande = commandes[id];
+            const div = document.createElement("div");
+            div.classList.add("commande-card");
+            div.innerHTML = `
+                <div><strong>Commande :</strong> ${commande.numero}</div>
+                <div><strong>Status :</strong> ${commande.status || "En cours"}</div>
+                <button onclick="markAsReady('${id}')">Marquer comme prête</button>
+            `;
+            container.appendChild(div);
+        }
+    });
+}
+
+// Marquer une commande comme prête
+function markAsReady(id) {
+    const commandeRef = ref(database, `commandes/${id}`);
+    update(commandeRef, { status: "Prête" })
+        .then(() => alert("Commande marquée comme prête !"))
+        .catch((error) => console.error("Erreur :", error));
+}
+
+document.addEventListener("DOMContentLoaded", fetchCommandes);
+
 // Fonction d'initialisation (chargée au démarrage de la page)
 document.addEventListener("DOMContentLoaded", renderCommandes);
